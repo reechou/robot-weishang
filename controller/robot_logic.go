@@ -86,13 +86,19 @@ func (self *Logic) masterMsg(msg *robot_proto.ReceiveMsgInfo) {
 		holmes.Error("user id: %s error.", msgInfo[0])
 		return
 	}
+	var sendMsg string
+	if len(msgInfo) > 2 {
+		sendMsg = strings.Join(msgInfo[1:], " ")
+	} else {
+		sendMsg = msgInfo[1]
+	}
 	var sendReq robot_proto.SendMsgInfo
 	sendReq.SendMsgs = append(sendReq.SendMsgs, robot_proto.SendBaseInfo{
 		WechatNick: msg.BaseInfo.WechatNick,
 		ChatType:   robot_proto.FROM_TYPE_PEOPLE,
 		UserName:   msgInfo[0],
 		MsgType:    robot_proto.RECEIVE_MSG_TYPE_TEXT,
-		Msg:        msgInfo[1],
+		Msg:        sendMsg,
 	})
 	err := self.robotExt.SendMsgs(robotHost, &sendReq)
 	if err != nil {
@@ -106,7 +112,7 @@ func (self *Logic) transferMsg(msg *robot_proto.ReceiveMsgInfo) {
 	}
 	
 	if strings.Contains(msg.Msg, "我通过了你的朋友验证请求") {
-		return 
+		return
 	}
 	
 	robotHost := self.getRobotHost(msg.BaseInfo.WechatNick)
